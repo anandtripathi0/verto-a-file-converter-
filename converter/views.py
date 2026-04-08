@@ -7,7 +7,7 @@ from pdf2docx import Converter
 import tempfile
 import convertapi
 import os
-import fitz # pymupdf library
+import fitz # pymupdf library 
 import io
 
 
@@ -83,8 +83,7 @@ def compress(request):
     return render(request,'compress.html')
 
 def resizer(request):
-    # if request.method == 'GET':
-        # return render(request,'resize.html')
+   
 
     if request.method == 'POST':
         upload_file = request.FILES.get('upload_file')
@@ -212,7 +211,7 @@ def word_to_pdf(request):
             pdf_filename = doc_filename.rsplit('.', 1)[0] + '.pdf' 
             pdf_path = os.path.join(fs.location, pdf_filename) 
 
-            convertapi.api_credentials = 'rIzLStQRDNBrkJs7BNx7qPWuCITqVF5L'
+            convertapi.api_credentials = os.getenv('CONVERT_API_SECRET')
             
             try: 
                 convertapi.convert('pdf', {
