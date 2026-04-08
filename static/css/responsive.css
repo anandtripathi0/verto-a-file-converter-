@@ -1,0 +1,77 @@
+* {
+    max-width: 100%;
+}
+
+@media (max-width: 1024px) {
+    .container {
+        padding: 15px;
+        margin: 30px auto;
+    }
+    .hero h1 {
+        font-size: 52px !important;
+    }
+    .navbar {
+        padding: 15px 30px !important;
+    }
+}
+
+
+@media (max-width: 768px) {
+
+    .navbar {
+        flex-direction: column;
+        gap: 15px;
+        padding: 15px !important;
+    }
+    .nav-links {
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 15px !important;
+    }
+
+    .tools-grid, 
+    .options-grid {
+        grid-template-columns: 1fr !important;
+    }
+
+    .input-row {
+        flex-direction: column;
+        gap: 15px !important;
+    }
+
+
+    .hero h1 {
+        font-size: 40px !important;
+    }
+    .container h1 {
+        font-size: 32px !important;
+    }
+    .hero p, .container p {
+        font-size: 16px !important;
+        margin-bottom: 30px !important;
+    }
+
+
+    .upload-area {
+        padding: 40px 15px !important;
+    }
+
+
+    .cta-group, .btn-group {
+        flex-direction: column;
+        width: 100%;
+    }
+    .cta-btn-large, .cta-btn-outline, .convert-btn, .merge-btn, .download-btn {
+        width: 100%;
+        text-align: center;
+        display: block;
+    }
+    
+    .theme-toggle-btn {
+        bottom: 20px;
+        right: 20px;
+        width: 48px;
+        height: 48px;
+        font-size: 20px;
+    }
+}

@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="en">
+
+{% load static %}
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PDF to DOC</title>
+    <style>
+        * { 
+            margin: 0; 
+            padding: 0; 
+            box-sizing: border-box; 
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            -webkit-font-smoothing: antialiased;
+        }
+        
+        body { 
+            background: radial-gradient(circle at 15% 0%, #FFFFFF 0%, #F0F4FA 50%, #E6EDF5 100%);
+            background-attachment: fixed;
+            color: #1D1D1F; 
+        }
+
+        .navbar { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            background-color: rgba(255, 255, 255, 0.5); 
+            padding: 16px 50px; 
+            backdrop-filter: blur(30px) saturate(200%); 
+            -webkit-backdrop-filter: blur(30px) saturate(200%);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.8);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.02);
+        }
+        
+        .logo { 
+            font-size: 20px; 
+            font-weight: 600; 
+            color: #1D1D1F; 
+            text-decoration: none; 
+            letter-spacing: -0.5px; 
+        }
+        
+        .nav-links { 
+            display: flex; 
+            gap: 24px; 
+        }
+        
+        .nav-links a { 
+            text-decoration: none; 
+            color: #515154; 
+            font-weight: 400; 
+            font-size: 14px; 
+            transition: color 0.2s ease; 
+        }
+        
+        .nav-links a:hover { 
+            color: #2B579A; 
+        }
+
+        .container { 
+            max-width: 800px; 
+            margin: 60px auto; 
+            text-align: center; 
+            padding: 20px; 
+        }
+        
+        .container h1 { 
+            font-size: 44px; 
+            font-weight: 700; 
+            color: #1D1D1F; 
+            margin-bottom: 12px; 
+            letter-spacing: -1px; 
+            -webkit-box-reflect: below -8px linear-gradient(transparent, rgba(0, 0, 0, 0.08));
+        }
+        
+        .container p { 
+            color: #86868B; 
+            margin-bottom: 48px; 
+            font-size: 18px; 
+            font-weight: 400; 
+        }
+
+        .upload-area { 
+            position: relative;
+            background: rgba(255, 255, 255, 0.4); 
+            border: 1px solid rgba(255, 255, 255, 0.9); 
+            border-radius: 24px; 
+            padding: 70px 20px; 
+            cursor: pointer; 
+            overflow: hidden;
+            transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1); 
+            box-shadow: 0 10px 40px rgba(0,0,0,0.04); 
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+        }
+
+        .upload-area::before {
+            content: "";
+            position: absolute;
+            top: -100%;
+            left: -100%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0) 40%, rgba(255, 255, 255, 0.9) 50%, rgba(255, 255, 255, 0) 60%);
+            transition: all 0.6s ease;
+        }
+
+        .upload-area:hover { 
+            background: rgba(255, 255, 255, 0.6); 
+            border-color: rgba(43, 87, 154, 0.4); 
+            transform: translateY(-5px) scale(1.01); 
+            box-shadow: 0 20px 50px rgba(0,0,0,0.08); 
+        }
+        
+        .upload-area:hover::before { 
+            top: -10%; 
+            left: -10%; 
+        }
+
+        .upload-icon { 
+            font-size: 56px; 
+            margin-bottom: 20px; 
+            filter: drop-shadow(0 4px 10px rgba(0,0,0,0.05)); 
+        }
+        
+        .upload-area h3 { 
+            color: #1D1D1F; 
+            font-weight: 600; 
+        }
+        
+        .upload-btn { 
+            background: #FFFFFF; 
+            color: #2B579A; 
+            padding: 12px 24px; 
+            border-radius: 24px; 
+            font-weight: 600; 
+            display: inline-block; 
+            margin-top: 20px; 
+            cursor: pointer; 
+            border: none; 
+            font-size: 15px; 
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            transition: all 0.2s ease; 
+        }
+        
+        .upload-btn:hover { 
+            background: #FDFDFD; 
+            transform: scale(0.98); 
+            box-shadow: 0 2px 6px rgba(0,0,0,0.05); 
+        }
+        
+        #fileInput { 
+            display: none; 
+        }
+
+        .file-list { 
+            margin-top: 24px; 
+            text-align: left; 
+            background: rgba(255, 255, 255, 0.4); 
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            padding: 24px; 
+            border-radius: 16px; 
+            box-shadow: 0 4px 20px rgba(0,0,0,0.04); 
+            border: 1px solid rgba(255, 255, 255, 0.8);
+            display: none; 
+        }
+        
+        .file-list h3 { 
+            font-size: 18px; 
+            margin-bottom: 12px; 
+            color: #1D1D1F; 
+            font-weight: 600; 
+            border-bottom: 1px solid rgba(0,0,0,0.05); 
+            padding-bottom: 12px; 
+        }
+        
+        .file-item { 
+            display: flex; 
+            justify-content: space-between; 
+            font-size: 14px; 
+            padding: 10px 0; 
+            color: #515154; 
+            font-weight: 500; 
+            border-bottom: 1px solid rgba(0,0,0,0.03);
+        }
+        
+        .file-item:last-child { 
+            border-bottom: none; 
+        }
+
+        .conversion-options { 
+            display: none; 
+            margin-top: 40px; 
+            text-align: left; 
+        }
+        
+        .conversion-options h3 { 
+            margin-bottom: 20px; 
+            font-size: 20px; 
+            font-weight: 600; 
+            color: #1D1D1F; 
+            text-align: center; 
+        }
+        
+        .options-grid { 
+            display: grid; 
+            grid-template-columns: repeat(2, 1fr); 
+            gap: 16px; 
+        }
+        
+        .option-card { 
+            position: relative;
+            background: rgba(255, 255, 255, 0.4); 
+            border: 1px solid rgba(255, 255, 255, 0.9); 
+            border-radius: 16px; 
+            padding: 24px 20px; 
+            cursor: pointer; 
+            text-align: left; 
+            overflow: hidden;
+            transition: all 0.3s cubic-bezier(0.165, 0.84, 0.44, 1); 
+            box-shadow: 0 4px 16px rgba(0,0,0,0.04); 
+            backdrop-filter: blur(10px);
+        }
+        
+        .option-card::before {
+            content: ""; 
+            position: absolute; 
+            top: -50%; 
+            left: -200%; 
+            width: 300%; 
+            height: 100%;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0) 30%, rgba(255, 255, 255, 0.8) 50%, rgba(255, 255, 255, 0) 70%);
+            transition: transform 0.6s ease;
+        }
+        
+        .option-card:hover { 
+            transform: translateY(-4px); 
+            border-color: rgba(43, 87, 154, 0.3); 
+            background: rgba(255, 255, 255, 0.6); 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.08); 
+        }
+        
+        .option-card:hover::before { 
+            transform: translateX(100%); 
+        }
+        
+        .option-card.active { 
+            border-color: #2B579A; 
+            background: rgba(255, 255, 255, 0.8); 
+            box-shadow: 0 0 0 1px #2B579A, 0 4px 16px rgba(0,0,0,0.04); 
+        }
+        
+        .option-card h4 { 
+            font-size: 17px; 
+            font-weight: 600; 
+            margin-bottom: 8px; 
+            color: #1D1D1F; 
+            display: flex; 
+            align-items: center; 
+            gap: 8px; 
+            transition: color 0.2s; 
+        }
+        
+        .option-card.active h4 { 
+            color: #2B579A; 
+        }
+        
+        .option-card p { 
+            font-size: 13px; 
+            color: #86868B; 
+            margin-bottom: 0; 
+            line-height: 1.5; 
+        }
+        
+        input[type="radio"] { 
+            display: none; 
+        }
+
+        .action-area { 
+            margin-top: 40px; 
+            display: none; 
+        }
+        
+        .loader { 
+            border: 3px solid rgba(0, 0, 0, 0.05); 
+            border-top: 3px solid #2B579A; 
+            border-radius: 50%; 
+            width: 36px; 
+            height: 36px; 
+            animation: spin 1s linear infinite; 
+            margin: 0 auto 16px auto; 
+            display: none; 
+        }
+        
+        @keyframes spin { 
+            0% { transform: rotate(0deg); } 
+            100% { transform: rotate(360deg); } 
+        }
+        
+        .status-text { 
+            font-weight: 500; 
+            font-size: 16px; 
+            color: #1D1D1F; 
+            margin-bottom: 20px; 
+            display: none; 
+        }
+
+        .convert-btn { 
+            background: #2B579A; 
+            color: white; 
+            padding: 16px 36px; 
+            border-radius: 30px; 
+            font-weight: 600; 
+            border: none; 
+            font-size: 17px; 
+            cursor: pointer; 
+            box-shadow: 0 4px 20px rgba(43, 87, 154, 0.3); 
+            transition: all 0.2s ease; 
+        }
+        
+        .convert-btn:hover { 
+            background: #1e3f75; 
+            transform: scale(0.97) translateY(1px); 
+        }
+
+        .download-btn { 
+            background: #34C759; 
+            color: white; 
+            padding: 16px 36px; 
+            border-radius: 30px; 
+            font-weight: 600; 
+            border: none; 
+            font-size: 17px; 
+            cursor: pointer; 
+            text-decoration: none; 
+            display: none; 
+            box-shadow: 0 4px 20px rgba(52, 199, 89, 0.3); 
+            transition: all 0.2s ease;
+        }
+        
+        .download-btn:hover { 
+            background: #36D962; 
+            transform: scale(0.97) translateY(1px); 
+        }
+
+        @media (max-width: 600px) {
+            .options-grid { 
+                grid-template-columns: 1fr; 
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar">
+        <a href="{% url 'main' %}" class="logo" style="display: flex; align-items: center; gap: 10px;">
+            <img src="{% static 'images/verto_icon.png' %}" alt="Verto Icon"
+                style="width: 32px; height: 32px; object-fit: contain;">
+            <span>Verto</span>
+        </a>
+        <div class="nav-links">
+            <a href="{%url 'img_to_pdf'%}">Img to PDF</a>
+            <a href="{%url 'compress'%}">Compress PDF</a>
+            <a href="{% url 'resize' %}">Resizer</a>
+            <a href="{%url 'pdf_to_doc'%}" style="color: #2B579A; font-weight: 600;">PDF to DOC</a>
+            <a href="{%url 'pdf_merge'%}">Merge PDF</a>
+            <a href="{%url 'word_to_pdf'%}">Word to PDF</a>
+        </div>
+    </nav>
+
+    <div class="container">
+        <h1>Convert PDF to Word</h1>
+        <p>Transform your pdf into editable Word documents instantly.</p>
+
+        <form id="convertForm" enctype="multipart/form-data">
+            {% csrf_token %}
+            
+            <div class="upload-area" id="dropZone" onclick="document.getElementById('fileInput').click()">
+                <div class="upload-icon">📄</div>
+                <h3>Select PDF or Drag & Drop</h3>
+                <p style="margin-top:5px; font-size:14px; color:#86868B;">Only PDF files allowed</p>
+                
+                <input type="file" id="fileInput" name="upload_file" accept=".pdf" required style="display: none;">
+                <button type="button" class="upload-btn">Select PDF File</button>
+            </div>
+
+            <div class="file-list" id="fileList" style="display: none;">
+                <h3>PDF Ready: <span id="fileCount">0</span></h3>
+                <div id="fileNames"></div>
+            </div>
+
+            <div class="action-area" id="actionArea" style="display: none;">
+                <button type="button" class="convert-btn" id="convertBtn">Convert to Word</button>
+                
+                <div class="loader" id="loader" style="display: none;"></div>
+                <div class="status-text" id="statusText" style="display: none;">Processing your PDF...</div>
+                
+                <a href="#" class="download-btn" id="downloadBtn" style="display: none;">⬇ Download Word Document</a>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        const fileInput = document.getElementById('fileInput');
+        const fileList = document.getElementById('fileList');
+        const fileNames = document.getElementById('fileNames');
+        const fileCount = document.getElementById('fileCount');
+        const actionArea = document.getElementById('actionArea');
+        const convertBtn = document.getElementById('convertBtn');
+        const loader = document.getElementById('loader');
+        const statusText = document.getElementById('statusText');
+        const downloadBtn = document.getElementById('downloadBtn');
+
+        fileInput.addEventListener('change', function() {
+            fileNames.innerHTML = '';
+            
+            if (this.files.length > 0) {
+                fileCount.textContent = this.files.length;
+                fileList.style.display = 'block';
+                actionArea.style.display = 'block';
+                
+                convertBtn.style.display = 'inline-block';
+                loader.style.display = 'none';
+                statusText.style.display = 'none';
+                downloadBtn.style.display = 'none';
+
+                Array.from(this.files).forEach(file => {
+                    const item = document.createElement('div');
+                    item.className = 'file-item';
+                    item.innerHTML = `<span>${file.name}</span> <span>${(file.size / 1024).toFixed(1)} KB</span>`;
+                    fileNames.appendChild(item);
+                });
+            }
+        });
+
+        const cards = document.querySelectorAll('.option-card');
+        cards.forEach(card => {
+            card.addEventListener('click', function() {
+                cards.forEach(c => c.classList.remove('active'));
+                this.classList.add('active');
+            });
+        });
+
+        convertBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+
+            if (fileInput.files.length === 0) {
+                alert("Please select a PDF file first!");
+                return;
+            }
+
+            convertBtn.style.display = 'none';
+            loader.style.display = 'block';
+            statusText.style.display = 'block';
+            statusText.textContent = 'Converting PDF to Word... Please wait.';
+            statusText.style.color = '#1D1D1F'; 
+
+            const form = document.getElementById('convertForm');
+            const formData = new FormData(form);
+            const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+            let fetchUrl = window.location.pathname;
+            if (!fetchUrl.endsWith('/')) {
+                fetchUrl += '/';
+            }
+
+            fetch('/pdf_to_doc/', {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRFToken': csrfToken
+                }
+            })
+            .then(response => {
+                if (response.headers.get("content-type")?.includes("text/html")) {
+                    throw new Error('Redirect Issue: Check URL');
+                }
+                if (response.ok) {
+                    let filename = "editable_document.docx";
+                    const disposition = response.headers.get('Content-Disposition');
+                    if (disposition && disposition.indexOf('filename=') !== -1) {
+                        filename = disposition.split('filename=')[1].replace(/"/g, '');
+                    }
+                    return response.blob().then(blob => ({ blob, filename }));
+                }
+                throw new Error('Conversion failed');
+            })
+            .then(({blob, filename}) => {
+                const url = window.URL.createObjectURL(blob);
+                
+                downloadBtn.href = url;
+                downloadBtn.download = filename;
+                
+                loader.style.display = 'none';
+                statusText.textContent = 'Conversion Successful! 🎉';
+                statusText.style.color = '#34C759'; 
+                downloadBtn.style.display = 'inline-block';
+            })
+            .catch(error => {
+                console.error(error);
+                loader.style.display = 'none';
+                statusText.textContent = 'Error: Something went wrong!';
+                statusText.style.color = '#FF3B30'; 
+                convertBtn.style.display = 'inline-block';
+            });
+        });
+    </script>
+</body>
+</html>

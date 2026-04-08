@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="en">
+
+{% load static %}
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Word to PDF - Convert DOC and DOCX to PDF</title>
+    <style>
+        * { 
+            margin: 0; 
+            padding: 0; 
+            box-sizing: border-box; 
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            -webkit-font-smoothing: antialiased;
+        }
+        
+        body { 
+            background: radial-gradient(circle at 15% 0%, #FFFFFF 0%, #F2F2FA 50%, #E5E5EA 100%);
+            background-attachment: fixed;
+            color: #1D1D1F; 
+        }
+
+        .navbar { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            background-color: rgba(255, 255, 255, 0.5); 
+            padding: 16px 50px; 
+            backdrop-filter: blur(30px) saturate(200%); 
+            -webkit-backdrop-filter: blur(30px) saturate(200%);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.8);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.02);
+        }
+
+        .logo { 
+            font-size: 20px; 
+            font-weight: 600; 
+            color: #1D1D1F; 
+            text-decoration: none; 
+            letter-spacing: -0.5px; 
+        }
+
+        .nav-links { 
+            display: flex; 
+            gap: 24px; 
+        }
+
+        .nav-links a { 
+            text-decoration: none; 
+            color: #515154; 
+            font-weight: 400; 
+            font-size: 14px; 
+            transition: color 0.2s ease; 
+        }
+
+        .nav-links a:hover { 
+            color: #5856D6; 
+        }
+
+        .container { 
+            max-width: 800px; 
+            margin: 60px auto; 
+            text-align: center; 
+            padding: 20px; 
+        }
+        
+        .container h1 { 
+            font-size: 44px; 
+            font-weight: 700; 
+            color: #1D1D1F; 
+            margin-bottom: 12px; 
+            letter-spacing: -1px; 
+            -webkit-box-reflect: below -8px linear-gradient(transparent, rgba(0, 0, 0, 0.08));
+        }
+
+        .container p { 
+            color: #86868B; 
+            margin-bottom: 48px; 
+            font-size: 18px; 
+            font-weight: 400; 
+        }
+
+        .upload-area { 
+            position: relative;
+            background: rgba(255, 255, 255, 0.4); 
+            border: 1px solid rgba(255, 255, 255, 0.9); 
+            border-radius: 24px; 
+            padding: 70px 20px; 
+            cursor: pointer; 
+            overflow: hidden;
+            transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1); 
+            box-shadow: 0 10px 40px rgba(0,0,0,0.04); 
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+        }
+
+        .upload-area::before {
+            content: "";
+            position: absolute;
+            top: -100%;
+            left: -100%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0) 40%, rgba(255, 255, 255, 0.9) 50%, rgba(255, 255, 255, 0) 60%);
+            transition: all 0.6s ease;
+        }
+
+        .upload-area:hover { 
+            background: rgba(255, 255, 255, 0.6); 
+            border-color: rgba(88, 86, 214, 0.4); 
+            transform: translateY(-5px) scale(1.01); 
+            box-shadow: 0 20px 50px rgba(0,0,0,0.08); 
+        }
+
+        .upload-area:hover::before { 
+            top: -10%; 
+            left: -10%; 
+        }
+
+        .upload-icon { 
+            font-size: 56px; 
+            margin-bottom: 20px; 
+            filter: drop-shadow(0 4px 10px rgba(0,0,0,0.05)); 
+        }
+
+        .upload-area h3 { 
+            color: #1D1D1F; 
+            font-weight: 600; 
+        }
+        
+        .upload-btn { 
+            background: #FFFFFF; 
+            color: #5856D6; 
+            padding: 12px 24px; 
+            border-radius: 24px; 
+            font-weight: 600; 
+            display: inline-block; 
+            margin-top: 20px; 
+            cursor: pointer; 
+            border: none; 
+            font-size: 15px; 
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            transition: all 0.2s ease; 
+        }
+
+        .upload-btn:hover { 
+            background: #FDFDFD; 
+            transform: scale(0.98); 
+            box-shadow: 0 2px 6px rgba(0,0,0,0.05); 
+        }
+        
+        #fileInput { 
+            display: none; 
+        }
+
+        .file-list { 
+            margin-top: 24px; 
+            text-align: left; 
+            background: rgba(255, 255, 255, 0.4); 
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            padding: 24px; 
+            border-radius: 16px; 
+            box-shadow: 0 4px 20px rgba(0,0,0,0.04); 
+            border: 1px solid rgba(255, 255, 255, 0.8);
+            display: none; 
+        }
+
+        .file-list h3 { 
+            font-size: 18px; 
+            margin-bottom: 12px; 
+            color: #1D1D1F; 
+            font-weight: 600; 
+            border-bottom: 1px solid rgba(0,0,0,0.05); 
+            padding-bottom: 12px; 
+        }
+        
+        .file-item { 
+            display: flex; 
+            justify-content: space-between; 
+            font-size: 14px; 
+            padding: 10px 0; 
+            color: #515154; 
+            font-weight: 500; 
+            border-bottom: 1px solid rgba(0,0,0,0.03);
+        }
+
+        .file-item:last-child { 
+            border-bottom: none; 
+        }
+
+        .file-item .file-name { 
+            display: flex; 
+            align-items: center; 
+            gap: 10px; 
+            color: #1D1D1F; 
+        }
+
+        .action-area { 
+            margin-top: 40px; 
+            display: none; 
+        }
+        
+        .loader { 
+            border: 3px solid rgba(0, 0, 0, 0.05); 
+            border-top: 3px solid #5856D6; 
+            border-radius: 50%; 
+            width: 36px; 
+            height: 36px; 
+            animation: spin 1s linear infinite; 
+            margin: 0 auto 16px auto; 
+            display: none; 
+        }
+
+        @keyframes spin { 
+            0% { transform: rotate(0deg); } 
+            100% { transform: rotate(360deg); } 
+        }
+        
+        .status-text { 
+            font-weight: 500; 
+            font-size: 16px; 
+            color: #1D1D1F; 
+            margin-bottom: 20px; 
+            display: none; 
+        }
+
+        .convert-btn { 
+            background: #5856D6; 
+            color: white; 
+            padding: 16px 36px; 
+            border-radius: 30px; 
+            font-weight: 600; 
+            border: none; 
+            font-size: 17px; 
+            cursor: pointer; 
+            box-shadow: 0 4px 20px rgba(88, 86, 214, 0.3); 
+            transition: all 0.2s ease; 
+        }
+
+        .convert-btn:hover { 
+            background: #4B49C6; 
+            transform: scale(0.97) translateY(1px); 
+        }
+
+        .download-btn { 
+            background: #FF3B30; 
+            color: white; 
+            padding: 16px 36px; 
+            border-radius: 30px; 
+            font-weight: 600; 
+            border: none; 
+            font-size: 17px; 
+            cursor: pointer; 
+            text-decoration: none; 
+            display: none; 
+            box-shadow: 0 4px 20px rgba(255, 59, 48, 0.3); 
+            transition: all 0.2s ease;
+        }
+
+        .download-btn:hover { 
+            background: #E6352B; 
+            transform: scale(0.97) translateY(1px); 
+        }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar">
+        <a href="{% url 'main' %}" class="logo" style="display: flex; align-items: center; gap: 10px;">
+            <img src="{% static 'images/verto_icon.png' %}" alt="Verto Icon"
+                style="width: 32px; height: 32px; object-fit: contain;">
+            <span>Verto</span>
+        </a>
+        <div class="nav-links">
+            <a href="{%url 'img_to_pdf'%}">Img to PDF</a>
+            <a href="{%url 'compress'%}">Compress PDF</a>
+            <a href="{% url 'resize' %}">Resizer</a>
+            <a href="{%url 'pdf_to_doc'%}">PDF to DOC</a>
+            <a href="{%url 'pdf_merge'%}">Merge PDF</a>
+            <a href="{%url 'word_to_pdf'%}" style="color: #5856D6; font-weight: 600;">Word to PDF</a>
+        </div>
+    </nav>
+
+    <div class="container">
+        <h1>Convert Word to PDF</h1>
+        <p>Make DOC and DOCX files easy to read by converting them to PDF.</p>
+
+        <form id="convertForm" action="{% url 'word_to_pdf' %}" method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
+            
+            <div class="upload-area" id="dropZone" onclick="document.getElementById('fileInput').click()">
+                <div class="upload-icon">📝</div>
+                <h3>Select Word files or Drag & Drop</h3>
+                <p style="margin-top:5px; font-size:14px; color:#86868B;">Supports .doc and .docx</p>
+                
+                <input type="file" id="fileInput" name="word_files" accept=".doc, .docx" required>
+                <button type="button" class="upload-btn">Select Word File</button>
+            </div>
+
+            <div class="file-list" id="fileList">
+                <h3>Ready to Convert (<span id="fileCount">0</span>)</h3>
+                <div id="fileNames"></div>
+            </div>
+
+            <div class="action-area" id="actionArea">
+                <button type="button" class="convert-btn" id="convertBtn">Convert to PDF</button>
+                
+                <div class="loader" id="loader"></div>
+                <div class="status-text" id="statusText">Converting Word to PDF... Please wait.</div>
+                
+                <button type="submit" id="actualSubmit" style="display: none;"></button>
+                
+                <a href="#" class="download-btn" id="downloadBtn" download="converted_document.pdf">⬇ Download PDF</a>
+            </div>
+        </form>
+    </div>
+
+<script>
+    const fileInput = document.getElementById('fileInput');
+    const fileList = document.getElementById('fileList');
+    const fileNames = document.getElementById('fileNames');
+    const fileCount = document.getElementById('fileCount');
+    const actionArea = document.getElementById('actionArea');
+    const convertBtn = document.getElementById('convertBtn');
+    const loader = document.getElementById('loader');
+    const statusText = document.getElementById('statusText');
+    const downloadBtn = document.getElementById('downloadBtn');
+    
+    const convertForm = document.getElementById('convertForm');
+
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
+    fileInput.addEventListener('change', function() {
+        fileNames.innerHTML = '';
+        
+        if (this.files.length > 0) {
+            fileCount.textContent = this.files.length;
+            fileList.style.display = 'block';
+            actionArea.style.display = 'block';
+            
+            convertBtn.style.display = 'inline-block';
+            loader.style.display = 'none';
+            statusText.style.display = 'none';
+            downloadBtn.style.display = 'none';
+
+            Array.from(this.files).forEach((file) => {
+                const item = document.createElement('div');
+                item.className = 'file-item';
+                item.innerHTML = `
+                    <div class="file-name">
+                        📄 ${file.name}
+                    </div>
+                    <span>${(file.size / 1024).toFixed(1)} KB</span>
+                `;
+                fileNames.appendChild(item);
+            });
+        } else {
+            fileList.style.display = 'none';
+            actionArea.style.display = 'none';
+        }
+    });
+
+    convertBtn.addEventListener('click', function(e) {
+        e.preventDefault(); 
+
+        if (fileInput.files.length === 0) {
+            alert("Please select a Word file first.");
+            return;
+        }
+
+        convertBtn.style.display = 'none';
+        loader.style.display = 'block';
+        statusText.style.display = 'block';
+        statusText.textContent = 'Converting Word to PDF... Please wait.';
+        statusText.style.color = '#1D1D1F'; 
+
+        let formData = new FormData(convertForm);
+        
+        const csrftoken = getCookie('csrftoken'); 
+
+        fetch("{% url 'word_to_pdf' %}", {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRFToken': csrftoken
+            }
+        })
+        .then(async response => {
+            if (response.ok) {
+                return response.blob(); 
+            }
+            const errorText = await response.text();
+            throw new Error(errorText);
+        })
+        .then(blob => {
+            loader.style.display = 'none';
+            statusText.textContent = 'Conversion Successful! 🎉';
+            statusText.style.color = '#34C759'; 
+            
+            const fileURL = window.URL.createObjectURL(blob);
+            downloadBtn.href = fileURL;
+            
+            let originalName = fileInput.files[0].name;
+            downloadBtn.download = originalName.replace(/\.[^/.]+$/, "") + ".pdf";
+
+            downloadBtn.style.display = 'inline-block';
+        })
+        .catch(error => {
+            console.error("Backend Error:", error);
+            alert("Django Server Error: \n\n" + error.message); 
+            
+            loader.style.display = 'none';
+            statusText.textContent = '❌ Error: Conversion failed.';
+            statusText.style.color = '#FF3B30'; 
+            convertBtn.style.display = 'inline-block';
+        });
+    });
+</script>
+</body>
+</html>

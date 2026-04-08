@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="en">
+
+{% load static %}
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DocuConvert | Next-Gen PDF Tools</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        :root {
+            --bg-color: #000000;
+            --surface-color: rgba(10, 10, 10, 0.6);
+            --border-color: rgba(255, 255, 255, 0.08);
+            --text-primary: #F5F5F7;
+            --text-secondary: #86868B;
+            --accent-gradient: linear-gradient(135deg, #5E5CE6 0%, #0A84FF 100%);
+            --nav-bg: rgba(0, 0, 0, 0.5);
+            --btn-bg: white;
+            --btn-text: black;
+            --btn-hover: #E5E5EA;
+            --cta-outline-hover: rgba(255, 255, 255, 0.05);
+            --card-hover-bg: #111111;
+            --card-hover-border: rgba(255, 255, 255, 0.15);
+            --card-shadow: 0 10px 40px rgba(0, 0, 0, 0.5), 0 0 20px rgba(94, 92, 230, 0.05);
+            --icon-bg: rgba(255, 255, 255, 0.03);
+            --hero-glow: radial-gradient(ellipse at 50% 0%, rgba(94, 92, 230, 0.15), transparent 60%);
+        }
+
+        body.light-mode {
+            --bg-color: #FBFBFD;
+            --surface-color: rgba(255, 255, 255, 0.6);
+            --border-color: rgba(0, 0, 0, 0.08);
+            --text-primary: #1D1D1F;
+            --text-secondary: #515154;
+            --nav-bg: rgba(255, 255, 255, 0.7);
+            --btn-bg: #1D1D1F;
+            --btn-text: white;
+            --btn-hover: #333336;
+            --cta-outline-hover: rgba(0, 0, 0, 0.03);
+            --card-hover-bg: rgba(255, 255, 255, 0.9);
+            --card-hover-border: rgba(94, 92, 230, 0.4);
+            --card-shadow: 0 12px 40px rgba(0, 0, 0, 0.06), 0 0 20px rgba(94, 92, 230, 0.08);
+            --icon-bg: rgba(0, 0, 0, 0.03);
+            --hero-glow: radial-gradient(ellipse at 50% 0%, rgba(94, 92, 230, 0.1), transparent 60%);
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            overflow-x: hidden;
+            line-height: 1.5;
+            transition: background-color 0.4s ease, color 0.4s ease;
+        }
+
+        #binaryCanvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        .navbar {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            z-index: 1000;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 50px;
+            background: var(--nav-bg);
+            backdrop-filter: blur(20px) saturate(180%);
+            -webkit-backdrop-filter: blur(20px) saturate(180%);
+            border-bottom: 1px solid var(--border-color);
+            transition: background 0.4s ease, border-color 0.4s ease;
+        }
+
+        .logo {
+            font-size: 22px;
+            font-weight: 700;
+            color: var(--text-primary);
+            text-decoration: none;
+            letter-spacing: -0.5px;
+        }
+
+        .logo span {
+            background: var(--accent-gradient);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            color: transparent;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 32px;
+            align-items: center;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: var(--text-secondary);
+            font-weight: 500;
+            font-size: 14px;
+            transition: color 0.3s ease;
+        }
+
+        .nav-links a:hover {
+            color: var(--text-primary);
+        }
+
+        .btn-primary {
+            background: var(--btn-bg);
+            color: var(--btn-text) !important;
+            padding: 10px 24px;
+            border-radius: 24px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: transform 0.2s ease, background 0.2s;
+        }
+
+        .btn-primary:hover {
+            transform: scale(1.02);
+            background: var(--btn-hover);
+        }
+
+        .hero {
+            min-height: 80vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 120px 20px 60px;
+            background: var(--hero-glow);
+            transition: background 0.4s ease;
+        }
+
+        .hero h1 {
+            font-size: 72px;
+            font-weight: 700;
+            letter-spacing: -2px;
+            line-height: 1.05;
+            margin-bottom: 24px;
+            max-width: 800px;
+        }
+
+        .hero h1 .gradient-text {
+            background: var(--accent-gradient);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            color: transparent;
+        }
+
+        .hero p {
+            font-size: 21px;
+            color: var(--text-secondary);
+            max-width: 600px;
+            margin-bottom: 48px;
+            font-weight: 400;
+            letter-spacing: -0.3px;
+        }
+
+        .cta-group {
+            display: flex;
+            gap: 16px;
+        }
+
+        .cta-btn-large {
+            background: var(--btn-bg);
+            color: var(--btn-text);
+            padding: 16px 40px;
+            border-radius: 30px;
+            font-size: 17px;
+            font-weight: 600;
+            text-decoration: none;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.1);
+        }
+
+        .cta-btn-large:hover {
+            transform: scale(0.98);
+            background: var(--btn-hover);
+        }
+
+        .cta-btn-outline {
+            background: transparent;
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+            padding: 16px 40px;
+            border-radius: 30px;
+            font-size: 17px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.2s ease;
+        }
+
+        .cta-btn-outline:hover {
+            background: var(--cta-outline-hover);
+            border-color: var(--text-primary);
+        }
+
+        .tools-section {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px 100px;
+        }
+
+        .tools-section h2 {
+            text-align: center;
+            font-size: 32px;
+            font-weight: 600;
+            margin-bottom: 48px;
+            letter-spacing: -0.5px;
+        }
+
+        .tools-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 24px;
+        }
+
+        .tool-card {
+            background: var(--surface-color);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            padding: 32px;
+            text-decoration: none;
+            display: flex;
+            flex-direction: column;
+            transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .tool-card::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 50%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.05), transparent);
+            transform: skewX(-20deg);
+            transition: 0.5s;
+        }
+
+        .tool-card:hover {
+            transform: translateY(-4px);
+            background: var(--card-hover-bg);
+            border-color: var(--card-hover-border);
+            box-shadow: var(--card-shadow);
+        }
+
+        .tool-card:hover::before {
+            left: 150%;
+        }
+
+        .tool-icon {
+            font-size: 32px;
+            margin-bottom: 20px;
+            display: inline-block;
+            background: var(--icon-bg);
+            width: 60px;
+            height: 60px;
+            line-height: 60px;
+            text-align: center;
+            border-radius: 14px;
+            border: 1px solid var(--border-color);
+        }
+
+        .tool-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .tool-title::after {
+            content: '→';
+            opacity: 0;
+            transform: translateX(-10px);
+            transition: all 0.3s ease;
+            color: #0A84FF;
+        }
+
+        .tool-card:hover .tool-title::after {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        .tool-desc {
+            font-size: 15px;
+            color: var(--text-secondary);
+            font-weight: 400;
+            line-height: 1.6;
+        }
+
+        .theme-toggle-btn {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background: var(--surface-color);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            font-size: 24px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            z-index: 9999;
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), background 0.3s;
+        }
+
+        .theme-toggle-btn:hover {
+            transform: scale(1.1) rotate(15deg);
+            background: var(--card-hover-bg);
+            border-color: var(--card-hover-border);
+        }
+    </style>
+</head>
+
+<body>
+
+    <canvas id="binaryCanvas"></canvas>
+
+    <nav class="navbar">
+        <a href="{% url 'main' %}" class="logo" style="display: flex; align-items: center; gap: 10px;">
+            <img src="{% static 'images/verto_icon.png' %}" alt="Verto Icon"
+                style="width: 32px; height: 32px; object-fit: contain;">
+
+            <span>Verto</span>
+        </a>
+        <div class="nav-links">
+            <a href="{% url 'main' %}">Home</a>
+            <a href="#tools">Explore Features</a>
+            <a href="#tools" class="btn-primary">Get Started</a>
+        </div>
+    </nav>
+
+    <section class="hero">
+        <h1>Documents, <br><span class="gradient-text">Beautifully Mastered.</span></h1>
+        <p>Experience the most seamless way to merge, convert, and compress your files. No clutter, just pure pro-level
+            performance.</p>
+
+        <div class="cta-group">
+            <a href="#tools" class="cta-btn-large">Explore All Tools</a>
+            <a href="{% url 'word_to_pdf' %}" class="cta-btn-outline">Try Word to PDF</a>
+        </div>
+    </section>
+
+    <section class="tools-section" id="tools">
+        <h2>Professional Suite</h2>
+
+        <div class="tools-grid">
+
+            <a href="{% url 'img_to_pdf' %}" class="tool-card">
+                <div class="tool-icon">🖼️</div>
+                <div class="tool-title">Image to PDF</div>
+                <div class="tool-desc">
+                    Convert JPG, PNG, and WEBP images into a single, clean PDF document effortlessly. Perfect for
+                    compiling portfolios, scanned receipts, and ID documents.
+                </div>
+            </a>
+
+            <a href="{% url 'compress' %}" class="tool-card">
+                <div class="tool-icon">🗜️</div>
+                <div class="tool-title">Compress PDF</div>
+                <div class="tool-desc">
+                    Reduce your PDF file size drastically while preserving maximal visual quality. Ideal for bypassing
+                    email attachment limits and speeding up web uploads.
+                </div>
+            </a>
+
+            <a href="{% url 'resize' %}" class="tool-card">
+                <div class="tool-icon">📐</div>
+                <div class="tool-title">Custom Resizer</div>
+                <div class="tool-desc">
+                    Scale and resize your images to exact custom pixel dimensions. A precision tool tailored for
+                    developers and designers needing pixel-perfect fits.
+                </div>
+            </a>
+
+            <a href="{% url 'pdf_to_doc' %}" class="tool-card">
+                <div class="tool-icon">📝</div>
+                <div class="tool-title">PDF to Word</div>
+                <div class="tool-desc">
+                    Transform locked PDFs back into fully formatted, editable Microsoft Word documents. Reclaim your
+                    text, layouts, and tables instantly.
+                </div>
+            </a>
+
+            <a href="{% url 'pdf_merge' %}" class="tool-card">
+                <div class="tool-icon">📑</div>
+                <div class="tool-title">Merge PDF</div>
+                <div class="tool-desc">
+                    Combine multiple scattered PDF files into one continuous, highly organized document. Order your
+                    pages exactly how you need them.
+                </div>
+            </a>
+
+            <a href="{% url 'word_to_pdf' %}" class="tool-card">
+                <div class="tool-icon">🔒</div>
+                <div class="tool-title">Word to PDF</div>
+                <div class="tool-desc">
+                    Secure your Word documents by converting them into universally accessible, read-only PDF files. Lock
+                    your fonts and formatting in place permanently.
+                </div>
+            </a>
+
+        </div>
+    </section>
+
+    <button class="theme-toggle-btn" id="themeToggleBtn" title="Toggle Dark/Light Mode">
+        ☀️
+    </button>
+
+    <script>
+        const themeToggleBtn = document.getElementById('themeToggleBtn');
+        const body = document.body;
+
+        let binaryColorDark = 'rgba(94, 92, 230, 0.35)';
+        let binaryColorLight = 'rgba(94, 92, 230, 0.35)';
+        let currentCanvasColor = binaryColorDark;
+
+        themeToggleBtn.addEventListener('click', () => {
+            body.classList.toggle('light-mode');
+
+            if (body.classList.contains('light-mode')) {
+                themeToggleBtn.innerHTML = '🌙';
+                currentCanvasColor = binaryColorLight;
+            } else {
+                themeToggleBtn.innerHTML = '☀️';
+                currentCanvasColor = binaryColorDark;
+            }
+        });
+
+        const canvas = document.getElementById('binaryCanvas');
+        const ctx = canvas.getContext('2d');
+
+        let width, height, rings;
+        const chars = '01';
+
+        function resize() {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+            initRings();
+        }
+        window.addEventListener('resize', resize);
+
+        function initRings() {
+            rings = [];
+            const numRings = 10;
+            const maxRadius = Math.max(width, height) * 0.8;
+
+            for (let i = 1; i <= numRings; i++) {
+                rings.push({
+                    radius: (maxRadius / numRings) * i,
+                    angle: Math.random() * Math.PI * 2,
+                    speed: (i % 2 === 0 ? 1 : -1) * (0.0005 + Math.random() * 0.001),
+                    fontSize: 12 + i * 1.5,
+                    text: Array.from({ length: Math.floor(i * 18) }, () => chars[Math.floor(Math.random() * chars.length)]).join('')
+                });
+            }
+        }
+        resize();
+
+        let scrollSpeedBoost = 0;
+        let lastScrollY = window.scrollY;
+
+        window.addEventListener('scroll', () => {
+            const currentScrollY = window.scrollY;
+            const delta = currentScrollY - lastScrollY;
+
+            if (delta < 0) {
+                scrollSpeedBoost = Math.min(scrollSpeedBoost + Math.abs(delta) * 0.015, 0.8);
+            } else {
+                scrollSpeedBoost = Math.min(scrollSpeedBoost + delta * 0.002, 0.15);
+            }
+
+            lastScrollY = currentScrollY;
+        });
+
+        function animate() {
+            ctx.clearRect(0, 0, width, height);
+
+            scrollSpeedBoost *= 0.92;
+
+            const cx = width / 2;
+            const cy = height / 2;
+
+            rings.forEach(ring => {
+                ring.angle += ring.speed * (1 + scrollSpeedBoost * 60);
+
+                ctx.save();
+                ctx.translate(cx, cy);
+                ctx.rotate(ring.angle);
+                ctx.font = `bold ${ring.fontSize}px monospace`;
+
+                ctx.fillStyle = currentCanvasColor;
+
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+
+                const charAngle = (Math.PI * 2) / ring.text.length;
+                for (let j = 0; j < ring.text.length; j++) {
+                    ctx.save();
+                    ctx.rotate(j * charAngle);
+                    ctx.translate(0, -ring.radius);
+                    ctx.fillText(ring.text[j], 0, 0);
+                    ctx.restore();
+                }
+                ctx.restore();
+            });
+
+            requestAnimationFrame(animate);
+        }
+
+        animate();
+    </script>
+</body>
+
+</html>
