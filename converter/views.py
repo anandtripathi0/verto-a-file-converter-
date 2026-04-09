@@ -4,12 +4,14 @@ from django.core.files.storage import FileSystemStorage
 from PIL import Image
 from docx import Document
 from pdf2docx import Converter  
+from dotenv import load_dotenv
 import tempfile
 import convertapi
 import os
 import fitz # pymupdf library 
 import io
 
+load_dotenv()
 
 def main(request):
     return render(request,'index.html')

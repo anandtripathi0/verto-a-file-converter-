@@ -26,7 +26,7 @@ SECRET_KEY = 'django-insecure-txhjzm(d05wlsqmm!^ckj!tq(dbc#eob(261t127r=!#u^*0o(
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
-ALLOWED_HOSTS = ['verto-upwk.onrender.com']
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -56,7 +56,7 @@ ROOT_URLCONF = 'pdf_converter.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': ['templates'],
+        'DIRS': [os.path.join(BASE_DIR,'templates')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -119,7 +119,7 @@ USE_TZ = True
 STATIC_URL = 'static/'
 STATIC_ROOT = os.path.join(BASE_DIR,'staticfiles')
 STATICFILES_DIRS = [
-    BASE_DIR / "static",  
+    os.path.join(BASE_DIR ,"static"),  
 ]
 
 MEDIA_URL = '/media/'
